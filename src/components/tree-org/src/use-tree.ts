@@ -12,14 +12,14 @@ export const useTree = (
   const left = ref(0)
   const top = ref(0)
   const autoDragging = ref(false)
-  function onDrag (x: number, y: number) {
+  function onDrag(x: number, y: number) {
     stopClick.set(true)
     autoDragging.value = false
     left.value = x
     top.value = y
     emit('on-drag', { x, y })
   }
-  function preventOutOfBounds (x: number, y: number) {
+  function preventOutOfBounds(x: number, y: number) {
     const zoom = refs.zoomRef.value as HTMLElement
     const orgchart = refs.treeRef.value as HTMLElement
     let maxX = zoom.clientWidth / 2
@@ -53,8 +53,10 @@ export const useTree = (
       top.value = y
     }
   }
-  function onDragStop (x: number, y: number) {
-    preventOutOfBounds(x, y)
+  function onDragStop(x: number, y: number) {
+    if (props.dragBoundLimit) {
+      preventOutOfBounds(x, y)
+    }
     setTimeout(() => {
       stopClick.set(false)
     }, 200)
@@ -62,14 +64,14 @@ export const useTree = (
   }
   const nodeMoving = ref(false)
   const parenNode = reactive({ value: <INode | null>{} })
-  function nodeMouseenter (e: MouseEvent, node: INode) {
+  function nodeMouseenter(e: MouseEvent, node: INode) {
     if (nodeMoving.value) {
       parenNode.value = node
     }
     emit('on-node-mouseenter', e, node.$$data, node)
     return true
   }
-  function nodeMouseleave (e: MouseEvent, node: INode) {
+  function nodeMouseleave(e: MouseEvent, node: INode) {
     if (nodeMoving.value) {
       parenNode.value = null
     }
@@ -81,7 +83,7 @@ export const useTree = (
   const menuY = ref(0)
   const menuData = ref({} as INode)
   const nodeMenus = ref([] as IMenu[])
-  function nodeContextmenu (e: MouseEvent, node: INode) {
+  function nodeContextmenu(e: MouseEvent, node: INode) {
     e.stopPropagation()
     e.preventDefault()
     const { defineMenus } = props
@@ -96,18 +98,20 @@ export const useTree = (
     menuData.value = node
   }
   const scale = ref(1)
-  function zoomWheel (e: WheelEvent) {
+  function zoomWheel(e: WheelEvent) {
     if (!props.scalable) return
-    e.preventDefault()
-    // 鼠标滚轮缩放
-    if (e.deltaY < 0) {
-      zoomOrgchart(0.1)
-    } else {
-      zoomOrgchart(-0.1)
+    if (props.wheelzoom) {
+      e.preventDefault()
+      // 鼠标滚轮缩放
+      if (e.deltaY < 0) {
+        zoomOrgchart(0.1)
+      } else {
+        zoomOrgchart(-0.1)
+      }
+      emit('on-zoom', scale.value)
     }
-    emit('on-zoom', scale.value)
   }
-  function zoomOrgchart (zoom: number) {
+  function zoomOrgchart(zoom: number) {
     if (!props.scalable) return
     const value = Number((Number(scale.value) + zoom).toFixed(1))
     if (zoom > 0) {
@@ -116,13 +120,13 @@ export const useTree = (
       scale.value = Math.max(0.3, value)
     }
   }
-  function restoreOrgchart () {
+  function restoreOrgchart() {
     scale.value = 1
     left.value = 0
     top.value = 0
     emit('on-restore')
   }
-  function autoDrag (el: HTMLElement, lf: number, tp: number) {
+  function autoDrag(el: HTMLElement, lf: number, tp: number) {
     // 计算偏移量，保持根节点相对页面位置不变
     autoDragging.value = true
     console.log(props.center, props.horizontal, el.offsetLeft, lf)
@@ -135,7 +139,7 @@ export const useTree = (
     preventOutOfBounds(left.value, top.value)
   }
   let timer: any
-  function handleClick (e: MouseEvent, node: INode) {
+  function handleClick(e: MouseEvent, node: INode) {
     // 由于鼠标事件执行顺序
     // mouseover--> mousedown-->mouseup-->click -->mouseout
     // 拖拽时会触发node-click
@@ -149,13 +153,13 @@ export const useTree = (
       emit('on-node-click', e, node.$$data, node)
     }, props.clickDelay)
   }
-  function handleDblclick (e: MouseEvent, node: INode) {
+  function handleDblclick(e: MouseEvent, node: INode) {
     // 取消上次延时未执行的方法
     clearTimeout(timer)
     // 此处为单击事件要执行的代码
     emit('on-node-dblclick', e, node.$$data, node)
   }
-  function handleExpand (e: MouseEvent, node: INode) {
+  function handleExpand(e: MouseEvent, node: INode) {
     e.stopPropagation()
     const el = document.querySelector(`.is-root_${suffix}`) as HTMLElement
     if (el) {
@@ -183,8 +187,8 @@ export const useTree = (
       emit('on-expand', e, node.$$data, node)
     }
   }
-  function loadData (node:INode, load: LoadFn, cb: () => void) {
-    load(node, (data:Array<INodeData>, auto:boolean) => {
+  function loadData(node: INode, load: LoadFn, cb: () => void) {
+    load(node, (data: Array<INodeData>, auto: boolean) => {
       const { children } = keys
       node.isLeaf = !data.length
       if (data.length) {
@@ -193,7 +197,7 @@ export const useTree = (
       }
     })
   }
-  function filter (value: any) {
+  function filter(value: any) {
     const filterNodeMethod = props.filterNodeMethod
     if (!filterNodeMethod) throw new Error('[Tree] filterNodeMethod is required when filter')
     const traverse = function (node: INodeData) {
@@ -225,10 +229,10 @@ export const useTree = (
     children: 'children',
     isLeaf: 'isLeaf'
   }, props.props))
-  function handleFocus (e: MouseEvent, data: INodeData, node: INode) {
+  function handleFocus(e: MouseEvent, data: INodeData, node: INode) {
     emit('on-node-focus', e, data, node)
   }
-  function handleBlur (e: MouseEvent, data: INodeData, node: INode) {
+  function handleBlur(e: MouseEvent, data: INodeData, node: INode) {
     const { id, label } = keys
     const childNodes = menuData.value.children || []
     for (let i = childNodes.length; i > 0; i--) {
@@ -241,7 +245,7 @@ export const useTree = (
     emit('on-node-blur', e, data, node)
   }
   const fullscreen = ref(false)
-  function handleFullscreen (e:string) {
+  function handleFullscreen(e: string) {
     fullscreen.value = !fullscreen.value
     if (e === 'esc') {
       return
@@ -252,20 +256,20 @@ export const useTree = (
       exitFullscreen()
     }
   }
-  function launchIntoFullscreen () {
+  function launchIntoFullscreen() {
     // 全屏
     const element = refs.eleRef.value as HTMLElement
     if (element.requestFullscreen) {
       element.requestFullscreen()
     }
   }
-  function exitFullscreen () {
+  function exitFullscreen() {
     // 退出全屏
     if (document.exitFullscreen) {
       document.exitFullscreen()
     }
   }
-  function collapse (list: Array<INode>) {
+  function collapse(list: Array<INode>) {
     list.forEach((child) => {
       if (child.expand) {
         child.expand = false
@@ -275,7 +279,7 @@ export const useTree = (
     })
   }
   const expanded = ref(false)
-  function expandChange () {
+  function expandChange() {
     expanded.value = !expanded.value
     if (!expanded.value) {
       expandedKeys.clear()
@@ -286,7 +290,7 @@ export const useTree = (
     toggleExpand(treeData.value, expanded.value)
     emit('on-expand-all', expanded.value)
   }
-  function toggleExpand (data: INode | Array<INode>, val: boolean) {
+  function toggleExpand(data: INode | Array<INode>, val: boolean) {
     if (Array.isArray(data)) {
       data.forEach((item) => {
         if (val) {
@@ -314,15 +318,27 @@ export const useTree = (
     }
   }
 
-  function setData (data: INodeData) {
+  function setData(data: INodeData) {
     treeData.value = initNodes(data)
   }
   const zoomStyle = computed(() => {
-    return {
-      width: `${100 / scale.value}%`,
-      height: `${100 / scale.value}%`,
+    const obj = {
       transform: `scale(${scale.value})`
     }
+
+    if (props.wheelzoom) {
+      obj.width = `${100 / scale.value}%`
+      obj.height = `${100 / scale.value}%`
+    } else {
+      if (props.viewscroll) {
+        obj.overflow = 'auto'
+      } else {
+        obj.width = `${100 / scale.value}%`
+        obj.height = `${100 / scale.value}%`
+      }
+    }
+    return obj
+
   })
   const zoomPercent = computed(() => {
     return `${Math.round(scale.value * 100)}%`
@@ -354,14 +370,14 @@ export const useTree = (
       })
     })
   let expandedKeys = new Set(props.defaultExpandKeys)
-  function getExpandKeys () {
+  function getExpandKeys() {
     return [...expandedKeys]
   }
-  function setExpandKeys (keys:Array<number|string>) {
+  function setExpandKeys(keys: Array<number | string>) {
     expandedKeys = new Set(keys)
     setData(props.data)
   }
-  function initNodes (nodeData: INodeData) {
+  function initNodes(nodeData: INodeData) {
     const { defaultExpandLevel = 0 } = props
     const data2node = (data: INodeData, level: number): INode => {
       const { id, label, pid, expand, children, isLeaf } = keys
@@ -405,8 +421,8 @@ export const useTree = (
       }
       setData(props.data)
     }, {
-      deep: true
-    })
+    deep: true
+  })
   const tools = reactive({
     visible: true,
     data: {

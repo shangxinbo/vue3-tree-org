@@ -41,13 +41,26 @@ export const treeProps = buildProps({
     type: Boolean,
     default: false
   },
+  viewscroll: {
+    // 仅在wheelzoom 为false的情况下起效
+    type: Boolean,
+    default: false
+  },
   scalable: {
     // 是否可缩放
     type: Boolean,
     default: true
   },
+  wheelzoom: {
+    type: Boolean,
+    default: true
+  },
   draggable: {
     // 是否可拖拽移动位置
+    type: Boolean,
+    default: true
+  },
+  dragBoundLimit: {
     type: Boolean,
     default: true
   },
@@ -83,7 +96,7 @@ export const treeProps = buildProps({
   defaultExpandLevel: Number,
   defaultExpandKeys: {
     type: Array,
-    default () {
+    default() {
       return []
     }
   },
@@ -103,7 +116,7 @@ export const treeProps = buildProps({
   },
   defineMenus: {
     type: definePropType<IMenu[] | DefineMenus>([Array, Function]),
-    default () {
+    default() {
       return menus
     }
   },

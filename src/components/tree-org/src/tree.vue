@@ -167,5 +167,8 @@ export default defineComponent({
   }
 })
 </script>
-<style lang="scss" scoped>
+<style scoped>
+.zoom-container::-webkit-scrollbar{
+  display: none;
+}
 </style>
