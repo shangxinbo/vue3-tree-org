@@ -96,7 +96,7 @@ export const treeProps = buildProps({
   defaultExpandLevel: Number,
   defaultExpandKeys: {
     type: Array,
-    default() {
+    default () {
       return []
     }
   },
@@ -116,7 +116,7 @@ export const treeProps = buildProps({
   },
   defineMenus: {
     type: definePropType<IMenu[] | DefineMenus>([Array, Function]),
-    default() {
+    default () {
       return menus
     }
   },
