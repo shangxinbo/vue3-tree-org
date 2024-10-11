@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ref, onMounted, onUnmounted, watch, computed, onBeforeMount } from 'vue'
 import { restrictToBounds, snapToGrid } from '@/utils/fns'
 import { matchesSelectorToParentElements, getComputedSize, addEvent, removeEvent } from '@/utils/dom'

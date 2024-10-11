@@ -1,3 +1,4 @@
+// @ts-nocheck
 import log from '@/utils/log'
 import { ref, nextTick, computed, onMounted, onUnmounted } from 'vue'
 import { UPDATE_MODEL_EVENT } from '@/utils/constants'

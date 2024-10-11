@@ -27,7 +27,7 @@
     "serve": "vue-cli-service serve",
     "lint": "vue-cli-service lint",
     "clean:dist": "rimraf dist",
-    "build": "npm run build:docs && npm run build:lib && npm run build:esm",
+    "build": "npm run build:lib && npm run build:esm",
     "build:docs": "vuepress build docs",
     "build:lib": "vue-cli-service build --target lib --name vue3-tree-org --dest lib src/index.ts",
     "build:esm": "npm run clean:dist && gulp --require sucrase/register/ts -f build/gulpfile.ts"

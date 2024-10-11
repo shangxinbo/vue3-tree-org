@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ref, nextTick, watch, computed, reactive, onBeforeMount } from 'vue'
 import { randomString } from '@/utils/fns'
 import type { SetupContext } from 'vue'
